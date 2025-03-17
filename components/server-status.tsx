@@ -57,10 +57,10 @@ export default function ServerStatus() {
       max: 50,
     },
     version: process.env.NEXT_PUBLIC_GAME_VERSION || "Forge 1.19.2",
-    hostname: process.env.NEXT_PUBLIC_SERVER_IP || "mc.anchorlab.net",
-    ip: process.env.NEXT_PUBLIC_SERVER_IP || "mc.anchorlab.net",
+    hostname: process.env.NEXT_PUBLIC_SERVER_IP || "mc.hostname.com",
+    ip: process.env.NEXT_PUBLIC_SERVER_IP || "mc.ip.address",
     motd: {
-      clean: [process.env.NEXT_PUBLIC_SERVER_DESCRIPTION || "Welcome to AnchorLab MC - Modded Survival"],
+      clean: [process.env.NEXT_PUBLIC_SERVER_DESCRIPTION || "Welcome to our modded Minecraft server!"],
     },
   }
 

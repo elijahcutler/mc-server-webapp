@@ -2,7 +2,7 @@ import { ServerIcon, Github, Heart } from "lucide-react"
 import Link from "next/link"
 
 export default function Footer() {
-  const serverName = process.env.NEXT_PUBLIC_SERVER_NAME || "AnchorLab MC"
+  const serverName = process.env.NEXT_PUBLIC_SERVER_NAME || "MC Server"
 
   return (
     <footer className="bg-card border-t border-border">

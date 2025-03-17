@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const serverName = process.env.NEXT_PUBLIC_SERVER_NAME || "AnchorLab MC"
+  const serverName = process.env.NEXT_PUBLIC_SERVER_NAME || "MC Server"
 
   return (
     <header className="bg-card border-b border-border">

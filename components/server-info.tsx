@@ -34,8 +34,8 @@ interface ModpackInfo {
 }
 
 export default function ServerInfo() {
-  const serverIp = process.env.NEXT_PUBLIC_SERVER_IP || "mc.anchorlab.net"
-  const gameVersion = process.env.NEXT_PUBLIC_GAME_VERSION || "Minecraft 1.19.2 (Forge)"
+  const serverIp = process.env.NEXT_PUBLIC_SERVER_IP || "mc.ip.address"
+  const gameVersion = process.env.NEXT_PUBLIC_GAME_VERSION || "Game Version"
 
   const [modpackInfo, setModpackInfo] = useState<ModpackInfo | null>(null)
   const [loading, setLoading] = useState(true)
@@ -101,7 +101,7 @@ export default function ServerInfo() {
 
         // Use fallback data from environment variables
         setModpackInfo({
-          name: process.env.NEXT_PUBLIC_MODPACK_NAME || "AnchorLab Custom Pack",
+          name: process.env.NEXT_PUBLIC_MODPACK_NAME || "Custom Mod Pack",
           version: process.env.NEXT_PUBLIC_MODPACK_VERSION || "v2.5",
           downloadUrl: "#",
           publishDate: "Unknown",
@@ -170,21 +170,24 @@ export default function ServerInfo() {
           ) : (
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <span className="text-base text-foreground">{`${modpackInfo?.name} ${modpackInfo?.version}`}</span>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="h-8 gap-1"
-                  as="a"
+                <a
+                  href={`https://modrinth.com/project/fabulously-optimized`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-base text-foreground underline hover:text-accent-foreground"
+                >
+                  {modpackInfo?.name}
+                </a>
+                <a
+                  className="h-8 gap-1 inline-flex items-center justify-center rounded-md border border-input bg-background px-3 py-1 text-sm font-medium text-foreground shadow-sm hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
                   href={modpackInfo?.downloadUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
                   <ExternalLink className="h-3.5 w-3.5" />
-                  Download
-                </Button>
+                  Modrinth Profile Download (.mrpack)
+                </a>
               </div>
-              <p className="text-xs text-muted-foreground">Released: {modpackInfo?.publishDate}</p>
             </div>
           )}
         </div>

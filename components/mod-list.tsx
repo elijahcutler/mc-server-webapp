@@ -57,10 +57,10 @@ export default function ModList() {
         setError(null)
 
         // Step 1: Get the game version from the server status (using environment variable for now)
-        const gameVersion = process.env.NEXT_PUBLIC_GAME_VERSION?.split(" ")[1] || "1.20.1"
+        const gameVersion = process.env.NEXT_PUBLIC_GAME_VERSION || "1.21.1"
 
         // Step 2: Fetch modpack versions
-        const modpackId = "fabulously-optimized"
+        const modpackId = process.env.NEXT_PUBLIC_MODPACK_ID || "fabulously-optimized"
         const loaderType = "neoforge"
         const versionsResponse = await fetch(
           `https://api.modrinth.com/v2/project/${modpackId}/version?loaders=["${loaderType}"]&game_versions=["${gameVersion}"]`,
