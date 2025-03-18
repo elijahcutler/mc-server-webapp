@@ -16,47 +16,23 @@ export default function Home() {
         <div className="container mx-auto px-4 py-8">
           <div className="space-y-12">
             {/* Server Status Section */}
-            <section>
-              <SectionHeader
-                id="server-status"
-                title="Server Status"
-                description="Check if the server is online and who's playing"
-              />
-              <div className="mt-4">
-                <ServerStatus />
-              </div>
+            <section id="server-status">
+              <ServerStatus />
             </section>
 
             {/* Server Info Section */}
-            <section>
-              <SectionHeader
-                id="server-info"
-                title="Server Information"
-                description="Everything you need to know to join the server"
-              />
-              <div className="mt-4">
-                <ServerInfo />
-              </div>
+            <section id="server-info">
+              <ServerInfo />
             </section>
 
             {/* Mod List Section */}
-            <section>
-              <SectionHeader
-                id="mod-list"
-                title="Mod List"
-                description="Explore the mods that power our server experience"
-              />
-              <div className="mt-4">
-                <ModList />
-              </div>
+            <section id="mod-list">
+              <ModList />
             </section>
 
             {/* Community Section */}
-            <section>
-              <SectionHeader id="community" title="Purpose" description="The lore of the server" />
-              <div className="mt-4">
-                <CommunitySection />
-              </div>
+            <section id="community">
+              <CommunitySection />
             </section>
           </div>
         </div>
