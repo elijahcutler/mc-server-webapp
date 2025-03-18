@@ -2,7 +2,7 @@
 
 A modern, responsive web application for managing and showcasing your Minecraft server. Built with Next.js, Tailwind CSS, and shadcn/ui components.
 
-![License](LICENSE)
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
 ## Features
 
