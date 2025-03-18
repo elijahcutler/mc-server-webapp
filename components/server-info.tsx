@@ -36,22 +36,27 @@ interface ModpackInfo {
 export default function ServerInfo() {
   const serverIp = process.env.NEXT_PUBLIC_SERVER_IP || "mc.ip.address"
   const gameVersion = process.env.NEXT_PUBLIC_GAME_VERSION || "Game Version"
-
+  const modpackId = process.env.NEXT_PUBLIC_MODPACK_ID
   const [modpackInfo, setModpackInfo] = useState<ModpackInfo | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     async function fetchModpackInfo() {
+      if (!modpackId) {
+        setLoading(false)
+        setError("No modpack ID provided")
+        return
+      }
+
       try {
         setLoading(true)
         setError(null)
 
         // Get the game version from the environment variable
-        const mcVersion = gameVersion.split(" ")[1] || "1.20.1"
+        const mcVersion = gameVersion || "1.20.1"
 
         // Fetch modpack versions
-        const modpackId = "fabulously-optimized"
         const loaderType = "neoforge"
         const versionsResponse = await fetch(
           `https://api.modrinth.com/v2/project/${modpackId}/version?loaders=["${loaderType}"]&game_versions=["${mcVersion}"]`,
@@ -98,14 +103,6 @@ export default function ServerInfo() {
       } catch (err) {
         console.error("Error fetching modpack info:", err)
         setError(err instanceof Error ? err.message : "Failed to fetch modpack info")
-
-        // Use fallback data from environment variables
-        setModpackInfo({
-          name: process.env.NEXT_PUBLIC_MODPACK_NAME || "Custom Mod Pack",
-          version: process.env.NEXT_PUBLIC_MODPACK_VERSION || "v2.5",
-          downloadUrl: "#",
-          publishDate: "Unknown",
-        })
       } finally {
         setLoading(false)
       }
@@ -155,23 +152,24 @@ export default function ServerInfo() {
 
         <div className="space-y-2">
           <div className="text-sm font-medium text-card-foreground">Modpack</div>
-          {loading ? (
+          {!modpackId ? (
+            <div className="text-muted-foreground">
+              <p>Modpack ID not provided.</p>
+            </div>
+          ) : loading ? (
             <div className="flex items-center gap-2 text-muted-foreground">
               <Loader2 className="h-4 w-4 animate-spin" />
               <span>Loading modpack information...</span>
             </div>
           ) : error ? (
             <div className="text-muted-foreground">
-              <p>Error loading modpack info. Using fallback data.</p>
-              <div className="flex items-center gap-2 mt-2">
-                <span className="text-base text-foreground">{`${modpackInfo?.name} ${modpackInfo?.version}`}</span>
-              </div>
+              <p>Error loading modpack info: {error}</p>
             </div>
           ) : (
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <a
-                  href={`https://modrinth.com/project/fabulously-optimized`}
+                  href={`https://modrinth.com/project/${modpackId}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-base text-foreground underline hover:text-accent-foreground"
@@ -195,8 +193,8 @@ export default function ServerInfo() {
         <div className="rounded-lg bg-accent/20 p-4">
           <h4 className="font-medium mb-2 text-card-foreground">Getting Started</h4>
           <ol className="list-decimal list-inside space-y-1 text-sm text-foreground">
-            <li>Download and install the modpack</li>
-            <li>Launch Minecraft with the modpack profile</li>
+            <li>{modpackId ? "Download and install the modpack" : "Install the required mods (TBD)"}</li>
+            <li>Launch Minecraft with the {modpackId ? "modpack profile" : "correct profile"}</li>
             <li>Add the server to your multiplayer list</li>
             <li>Connect and start playing!</li>
           </ol>

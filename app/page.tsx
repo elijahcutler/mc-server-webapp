@@ -53,7 +53,7 @@ export default function Home() {
 
             {/* Community Section */}
             <section>
-              <SectionHeader id="community" title="Our Community" description="The story behind our server" />
+              <SectionHeader id="community" title="Purpose" description="The lore of the server" />
               <div className="mt-4">
                 <CommunitySection />
               </div>
@@ -61,7 +61,6 @@ export default function Home() {
           </div>
         </div>
       </main>
-
       <Footer />
     </div>
   )

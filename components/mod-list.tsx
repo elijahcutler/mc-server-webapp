@@ -49,18 +49,24 @@ export default function ModList() {
   const [categories, setCategories] = useState<string[]>(["All"])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const modpackId = process.env.NEXT_PUBLIC_MODPACK_ID
 
   useEffect(() => {
     async function fetchModData() {
+      if (!modpackId) {
+        setLoading(false)
+        setError("No modpack ID provided")
+        return
+      }
+
       try {
         setLoading(true)
         setError(null)
 
         // Step 1: Get the game version from the server status (using environment variable for now)
-        const gameVersion = process.env.NEXT_PUBLIC_GAME_VERSION || "1.21.1"
+        const gameVersion = process.env.NEXT_PUBLIC_GAME_VERSION || ""
 
         // Step 2: Fetch modpack versions
-        const modpackId = process.env.NEXT_PUBLIC_MODPACK_ID || "fabulously-optimized"
         const loaderType = "neoforge"
         const versionsResponse = await fetch(
           `https://api.modrinth.com/v2/project/${modpackId}/version?loaders=["${loaderType}"]&game_versions=["${gameVersion}"]`,
@@ -141,41 +147,49 @@ export default function ModList() {
       <CardHeader>
         <CardTitle className="text-2xl text-card-foreground">Mod List</CardTitle>
         <CardDescription className="text-muted-foreground">
-          {loading
+          {!modpackId
+            ? ""
+            : loading
             ? "Loading mods from Modrinth API..."
             : `Our server runs ${mods.length} carefully selected mods for the best experience`}
         </CardDescription>
 
-        <div className="flex flex-col sm:flex-row gap-4 mt-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="text"
-              placeholder="Search mods..."
-              className="pl-8 text-foreground"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              disabled={loading}
-            />
-          </div>
+        {modpackId && (
+          <div className="flex flex-col sm:flex-row gap-4 mt-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder="Search mods..."
+                className="pl-8 text-foreground"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                disabled={loading}
+              />
+            </div>
 
-          <div className="flex flex-wrap gap-2">
-            {categories.map((category) => (
-              <Badge
-                key={category}
-                variant={selectedCategory === category ? "default" : "outline"}
-                className={`cursor-pointer ${loading ? "opacity-50" : ""}`}
-                onClick={() => !loading && setSelectedCategory(category)}
-              >
-                {category}
-              </Badge>
-            ))}
+            <div className="flex flex-wrap gap-2">
+              {categories.map((category) => (
+                <Badge
+                  key={category}
+                  variant={selectedCategory === category ? "default" : "outline"}
+                  className={`cursor-pointer ${loading ? "opacity-50" : ""}`}
+                  onClick={() => !loading && setSelectedCategory(category)}
+                >
+                  {category}
+                </Badge>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </CardHeader>
 
       <CardContent>
-        {loading ? (
+        {!modpackId ? (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">Modpack ID not provided.</p>
+          </div>
+        ) : loading ? (
           <div className="flex flex-col items-center justify-center py-12 space-y-4">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
             <p className="text-muted-foreground">Loading mods from Modrinth API...</p>

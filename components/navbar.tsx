@@ -2,12 +2,22 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { ServerIcon, Map, Github, Menu, X, Users } from "lucide-react"
+import { ServerIcon, Map, Menu, X, Users } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import RequestAccessForm from "./RequestAccessForm"
+import { SiGithub } from "@icons-pack/react-simple-icons"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isRequestFormOpen, setIsRequestFormOpen] = useState(false)
   const serverName = process.env.NEXT_PUBLIC_SERVER_NAME || "MC Server"
+  const githubUrl = process.env.NEXT_PUBLIC_GITHUB_URL || "https://github.com/elijahcutler/mc-webapp"
 
   return (
     <header className="bg-card border-b border-border">
@@ -46,17 +56,31 @@ export default function Navbar() {
 
           {/* Action Buttons */}
           <div className="hidden md:flex items-center gap-2">
-            <Button variant="outline" size="sm" className="gap-1">
-              <Map className="h-4 w-4" />
-              <span>Map</span>
-            </Button>
-            <Button variant="default" size="sm" className="gap-1">
+            <TooltipProvider>
+              <Tooltip delayDuration={0}>
+                <TooltipTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-1" disabled>
+                    <Map className="h-4 w-4" />
+                    <span>Map</span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">
+                  <p>Coming Soon!</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            <Button 
+              variant="default" 
+              size="sm" 
+              className="gap-1"
+              onClick={() => setIsRequestFormOpen(true)}
+            >
               <Users className="h-4 w-4" />
               <span>Request Access</span>
             </Button>
-            <Link href="https://github.com/yourusername/minecraft-server" target="_blank" rel="noopener noreferrer">
+            <Link href={`${githubUrl}`} target="_blank" rel="noopener noreferrer">
               <Button variant="ghost" size="icon" className="h-8 w-8">
-                <Github className="h-5 w-5" />
+                <SiGithub className="h-5 w-5" color="currentColor" />
                 <span className="sr-only">GitHub</span>
               </Button>
             </Link>
@@ -105,27 +129,41 @@ export default function Navbar() {
               </Link>
             </nav>
             <div className="flex flex-col space-y-2">
-              <Button variant="outline" className="w-full justify-start gap-2">
-                <Map className="h-4 w-4" />
-                <span>Map</span>
-              </Button>
-              <Button variant="default" className="w-full justify-start gap-2">
+              <TooltipProvider>
+                <Tooltip delayDuration={0}>
+                  <TooltipTrigger asChild>
+                    <Button variant="outline" className="w-full justify-start gap-2" disabled>
+                      <Map className="h-4 w-4" />
+                      <span>Map</span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">
+                    <p>Coming Soon!</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              <Button 
+                variant="default" 
+                className="w-full justify-start gap-2"
+                onClick={() => setIsRequestFormOpen(true)}
+              >
                 <Users className="h-4 w-4" />
                 <span>Request Access</span>
               </Button>
               <Link
-                href="https://github.com/yourusername/minecraft-server"
+                href={`${githubUrl}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 px-4 py-2 hover:bg-accent rounded-md transition-colors text-foreground"
               >
-                <Github className="h-5 w-5" />
+                <SiGithub className="h-5 w-5" color="currentColor" />
                 <span>GitHub</span>
               </Link>
             </div>
           </div>
         )}
       </div>
+      {isRequestFormOpen && <RequestAccessForm onClose={() => setIsRequestFormOpen(false)} />}
     </header>
   )
 }
