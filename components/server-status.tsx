@@ -78,13 +78,13 @@ export default function ServerStatus() {
               Checking...
             </Badge>
           ) : (
-            <Badge className={displayData.online ? "bg-green-500 text-white" : "bg-red-500 text-white"}>
-              {displayData.online ? "Online" : "Offline"}
+            <Badge className={displayData?.online ? "bg-green-500 text-white" : "bg-red-500 text-white"}>
+              {displayData?.online ? "Online" : "Offline"}
             </Badge>
           )}
         </div>
         <CardDescription className="text-muted-foreground">
-          {error ? error : displayData.motd?.clean?.[0] || "Welcome to our modded Minecraft server!"}
+          {error ? error : displayData?.motd?.clean?.[0] || "Welcome to our modded Minecraft server!"}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -100,8 +100,8 @@ export default function ServerStatus() {
                   <Users className="h-5 w-5 text-primary" />
                   <span className="font-medium text-card-foreground">Players</span>
                 </div>
-                <div className="text-2xl font-bold text-primary">{displayData.players.online}</div>
-                <div className="text-sm text-muted-foreground">{`of ${displayData.players.max} max`}</div>
+                <div className="text-2xl font-bold text-primary">{displayData?.players?.online || 0}</div>
+                <div className="text-sm text-muted-foreground">{`of ${displayData?.players?.max || 0} max`}</div>
               </div>
 
               <div className="bg-accent/30 p-4 rounded-lg">
@@ -109,7 +109,7 @@ export default function ServerStatus() {
                   <Server className="h-5 w-5 text-primary" />
                   <span className="font-medium text-card-foreground">Version</span>
                 </div>
-                <div className="text-2xl font-bold text-primary">{displayData.version}</div>
+                <div className="text-2xl font-bold text-primary">{displayData?.version || "Unknown"}</div>
                 <div className="text-sm text-muted-foreground">Forge Modded</div>
               </div>
             </div>

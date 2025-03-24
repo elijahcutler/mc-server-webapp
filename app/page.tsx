@@ -4,7 +4,6 @@ import ModList from "@/components/mod-list"
 import ServerInfo from "@/components/server-info"
 import CommunitySection from "@/components/community-section"
 import Footer from "@/components/footer"
-import SectionHeader from "@/components/section-header"
 
 export default function Home() {
   return (

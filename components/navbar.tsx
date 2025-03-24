@@ -6,12 +6,6 @@ import { ServerIcon, Map, Menu, X, Users } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import RequestAccessForm from "./RequestAccessForm"
 import { SiGithub } from "@icons-pack/react-simple-icons"
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -56,22 +50,13 @@ export default function Navbar() {
 
           {/* Action Buttons */}
           <div className="hidden md:flex items-center gap-2">
-            <TooltipProvider>
-              <Tooltip delayDuration={0}>
-                <TooltipTrigger asChild>
-                  <Button variant="outline" size="sm" className="gap-1" disabled>
-                    <Map className="h-4 w-4" />
-                    <span>Map</span>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom">
-                  <p>Coming Soon!</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-            <Button 
-              variant="default" 
-              size="sm" 
+            <Button variant="outline" size="sm" className="gap-1" disabled>
+              <Map className="h-4 w-4" />
+              <span>Map</span>
+            </Button>
+            <Button
+              variant="default"
+              size="sm"
               className="gap-1"
               onClick={() => setIsRequestFormOpen(true)}
             >
@@ -129,21 +114,12 @@ export default function Navbar() {
               </Link>
             </nav>
             <div className="flex flex-col space-y-2">
-              <TooltipProvider>
-                <Tooltip delayDuration={0}>
-                  <TooltipTrigger asChild>
-                    <Button variant="outline" className="w-full justify-start gap-2" disabled>
-                      <Map className="h-4 w-4" />
-                      <span>Map</span>
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent side="right">
-                    <p>Coming Soon!</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-              <Button 
-                variant="default" 
+              <Button variant="outline" className="w-full justify-start gap-2" disabled>
+                <Map className="h-4 w-4" />
+                <span>Map</span>
+              </Button>
+              <Button
+                variant="default"
                 className="w-full justify-start gap-2"
                 onClick={() => setIsRequestFormOpen(true)}
               >
