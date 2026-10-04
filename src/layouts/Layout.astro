@@ -1,0 +1,56 @@
+---
+import "@/styles/global.css"
+import { Moon, Sun } from "lucide-preact"
+import { config } from "@/lib/config"
+import { buttonVariants, cn } from "@/lib/ui"
+---
+
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{config.serverName}</title>
+    <meta name="description" content={config.serverDescription} />
+    <meta property="og:title" content={config.serverName} />
+    <meta property="og:description" content={config.serverDescription} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <script is:inline>
+      // Apply the saved or system theme before first paint (defaults to dark).
+      ;(() => {
+        let theme
+        try {
+          theme = localStorage.getItem("theme")
+        } catch {}
+        if (theme !== "light" && theme !== "dark") {
+          theme = matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark"
+        }
+        document.documentElement.classList.toggle("dark", theme === "dark")
+      })()
+    </script>
+  </head>
+  <body class="min-h-screen antialiased">
+    <slot />
+
+    <button
+      type="button"
+      id="theme-toggle"
+      aria-label="Toggle theme"
+      class={cn(buttonVariants({ variant: "outline", size: "icon" }), "fixed bottom-4 right-4 z-40 rounded-full shadow-lg")}
+    >
+      <Sun className="h-5 w-5 hidden dark:block" aria-hidden="true" />
+      <Moon className="h-5 w-5 dark:hidden" aria-hidden="true" />
+    </button>
+
+    <script>
+      document.getElementById("theme-toggle")?.addEventListener("click", () => {
+        const dark = document.documentElement.classList.toggle("dark")
+        try {
+          localStorage.setItem("theme", dark ? "dark" : "light")
+        } catch {
+          // Storage can be unavailable (private mode); the toggle still works for this visit.
+        }
+      })
+    </script>
+  </body>
+</html>

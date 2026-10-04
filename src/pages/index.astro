@@ -1,0 +1,79 @@
+---
+import Layout from "@/layouts/Layout.astro"
+import Navbar from "@/components/Navbar.astro"
+import ServerInfo from "@/components/ServerInfo.astro"
+import Community from "@/components/Community.astro"
+import Footer from "@/components/Footer.astro"
+import ServerStatus from "@/islands/ServerStatus"
+import ModList from "@/islands/ModList"
+import RequestAccessForm from "@/islands/RequestAccessForm"
+import { config, LOADER_NAMES } from "@/lib/config"
+import { fetchModpack, type ModpackData } from "@/lib/modrinth"
+import { card, cn } from "@/lib/ui"
+
+// Fetch the modpack once at build time. Rebuild periodically to pick up
+// modpack updates. If Modrinth is unreachable, the mod list fetches in the browser.
+let modpack: ModpackData | null = null
+if (config.modpackId) {
+  try {
+    modpack = await fetchModpack(config.modpackId, { loader: config.modLoader, gameVersion: config.gameVersion })
+  } catch (err) {
+    console.warn(`[modrinth] Build-time fetch failed, falling back to client-side loading: ${err}`)
+  }
+}
+---
+
+<Layout>
+  <div class="min-h-screen flex flex-col">
+    <Navbar />
+
+    <main class="grow">
+      <div class="container mx-auto px-4 py-8">
+        <div class="space-y-12">
+          <section id="server-status">
+            <ServerStatus
+              client:load
+              serverIp={config.serverIp}
+              description={config.serverDescription}
+              loaderName={LOADER_NAMES[config.modLoader] ?? config.modLoader}
+            />
+          </section>
+
+          <section id="server-info">
+            <ServerInfo modpack={modpack} />
+          </section>
+
+          <section id="mod-list">
+            <div class={card.root}>
+              <div class={card.header}>
+                <h2 class={card.title}>Mod List</h2>
+              </div>
+              <div class={cn(card.content)}>
+                {
+                  config.modpackId ? (
+                    <ModList
+                      client:visible
+                      initialMods={modpack?.mods ?? null}
+                      modpackId={config.modpackId}
+                      loader={config.modLoader}
+                      gameVersion={config.gameVersion}
+                    />
+                  ) : (
+                    <p class="text-center py-12 text-muted-foreground">Modpack ID not provided.</p>
+                  )
+                }
+              </div>
+            </div>
+          </section>
+
+          <section id="community">
+            <Community />
+          </section>
+        </div>
+      </div>
+    </main>
+
+    <Footer />
+  </div>
+  <RequestAccessForm client:load />
+</Layout>

@@ -1,0 +1,122 @@
+---
+import { Check, Copy, ExternalLink } from "lucide-preact"
+import type { ModpackData } from "@/lib/modrinth"
+import { config } from "@/lib/config"
+import { buttonVariants, card, cn } from "@/lib/ui"
+
+interface Props {
+  modpack: ModpackData | null
+}
+const { modpack } = Astro.props
+const serverIp = config.serverIp ?? "mc.ip.address"
+const hasModpack = Boolean(config.modpackId)
+---
+
+<div class={cn(card.root, "h-full")}>
+  <div class={card.header}>
+    <h2 class={card.title}>Server Information</h2>
+    <p class={card.description}>Everything you need to connect to our server</p>
+  </div>
+  <div class={cn(card.content, "space-y-6")}>
+    <div class="space-y-2">
+      <div class="text-sm font-medium text-card-foreground">Server Address</div>
+      <div class="flex items-center gap-2">
+        <code class="relative rounded bg-muted px-[0.5rem] py-[0.3rem] font-mono text-base flex-1 text-foreground">
+          {serverIp}
+        </code>
+        <button
+          type="button"
+          id="copy-server-ip"
+          data-ip={serverIp}
+          class={cn(buttonVariants({ variant: "outline", size: "icon" }), "h-8 w-8")}
+        >
+          <Copy className="h-4 w-4 copy-icon" aria-hidden="true" />
+          <Check className="h-4 w-4 text-primary check-icon hidden" aria-hidden="true" />
+          <span class="sr-only">Copy server address</span>
+        </button>
+      </div>
+      <p id="copy-status" class="text-xs text-muted-foreground h-4" aria-live="polite"></p>
+    </div>
+
+    <div class="space-y-2">
+      <div class="text-sm font-medium text-card-foreground">Game Version</div>
+      <div class="text-base text-foreground">{config.gameVersion ?? "Not specified"}</div>
+    </div>
+
+    <div class="space-y-2">
+      <div class="text-sm font-medium text-card-foreground">Modpack</div>
+      {
+        !hasModpack ? (
+          <p class="text-muted-foreground">Modpack ID not provided.</p>
+        ) : modpack ? (
+          <div class="flex flex-wrap items-center gap-2">
+            <a
+              href={`https://modrinth.com/modpack/${modpack.slug}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-base text-foreground underline hover:text-primary"
+            >
+              {modpack.name}
+            </a>
+            <span class="text-sm text-muted-foreground">v{modpack.version}</span>
+            {modpack.downloadUrl && (
+              <a
+                href={modpack.downloadUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                class={cn(buttonVariants({ variant: "outline", size: "sm" }), "h-8 gap-1")}
+              >
+                <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
+                Modrinth Profile Download (.mrpack)
+              </a>
+            )}
+          </div>
+        ) : (
+          <a
+            href={`https://modrinth.com/modpack/${config.modpackId}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-base text-foreground underline hover:text-primary"
+          >
+            View the modpack on Modrinth
+          </a>
+        )
+      }
+    </div>
+
+    <div class="rounded-lg bg-accent/20 p-4">
+      <h3 class="font-medium mb-2 text-card-foreground">Getting Started</h3>
+      <ol class="list-decimal list-inside space-y-1 text-sm text-foreground">
+        <li>{hasModpack ? "Download and install the modpack" : "Install the required mods (TBD)"}</li>
+        <li>Launch Minecraft with the {hasModpack ? "modpack profile" : "correct profile"}</li>
+        <li>Add the server to your multiplayer list</li>
+        <li>Connect and start playing!</li>
+      </ol>
+    </div>
+  </div>
+</div>
+
+<script>
+  const button = document.getElementById("copy-server-ip")!
+  const status = document.getElementById("copy-status")!
+  let timer: ReturnType<typeof setTimeout> | undefined
+
+  function show(copied: boolean, message: string) {
+    button.querySelector(".copy-icon")?.classList.toggle("hidden", copied)
+    button.querySelector(".check-icon")?.classList.toggle("hidden", !copied)
+    status.textContent = message
+    clearTimeout(timer)
+    timer = setTimeout(() => {
+      button.querySelector(".copy-icon")?.classList.remove("hidden")
+      button.querySelector(".check-icon")?.classList.add("hidden")
+      status.textContent = ""
+    }, 2000)
+  }
+
+  button.addEventListener("click", () => {
+    navigator.clipboard
+      .writeText(button.dataset.ip ?? "")
+      .then(() => show(true, "Copied!"))
+      .catch(() => show(false, "Couldn't copy, select the address instead."))
+  })
+</script>
