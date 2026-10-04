@@ -208,9 +208,9 @@ export default function ModList() {
                   href={`https://modrinth.com/mod/${mod.slug}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="card bg-accent/20 shadow-md hover:shadow-lg transition-all hover:scale-[1.02] hover:bg-accent/30"
+                  className="block rounded-lg bg-accent/20 shadow-md hover:shadow-lg transition-all hover:scale-[1.02] hover:bg-accent/30"
                 >
-                  <div className="card-body p-4">
+                  <div className="p-4">
                     <div className="flex items-start gap-3">
                       <img
                         src={mod.imageUrl}
