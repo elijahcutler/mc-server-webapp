@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useId, useState } from "react"
 import { Loader2, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
@@ -13,6 +13,15 @@ export default function RequestAccessForm({ onClose }: RequestAccessFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [submitted, setSubmitted] = useState(false)
+  const id = useId()
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose()
+    }
+    document.addEventListener("keydown", onKeyDown)
+    return () => document.removeEventListener("keydown", onKeyDown)
+  }, [onClose])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -40,10 +49,17 @@ export default function RequestAccessForm({ onClose }: RequestAccessFormProps) {
   }
 
   return (
-    <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50">
-      <div className="fixed left-[50%] top-[50%] translate-x-[-50%] translate-y-[-50%] w-full max-w-lg">
-        <div className="bg-card border border-border p-6 rounded-lg shadow-lg">
+    <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50" onClick={onClose}>
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={`${id}-title`}
+        className="fixed left-[50%] top-[50%] translate-x-[-50%] translate-y-[-50%] w-full max-w-lg px-4"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="relative bg-card border border-border p-6 rounded-lg shadow-lg">
           <button
+            type="button"
             className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100"
             onClick={onClose}
           >
@@ -51,7 +67,7 @@ export default function RequestAccessForm({ onClose }: RequestAccessFormProps) {
             <span className="sr-only">Close</span>
           </button>
 
-          <h3 className="text-lg font-semibold text-foreground">Request Server Access</h3>
+          <h3 id={`${id}-title`} className="text-lg font-semibold text-foreground">Request Server Access</h3>
 
           {submitted ? (
             <div className="mt-4 space-y-4">
@@ -63,11 +79,13 @@ export default function RequestAccessForm({ onClose }: RequestAccessFormProps) {
           ) : (
             <form onSubmit={handleSubmit} className="mt-4 space-y-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">
+                <label htmlFor={`${id}-discord`} className="text-sm font-medium text-foreground">
                   Discord Username
                 </label>
                 <input
+                  id={`${id}-discord`}
                   type="text"
+                  autoFocus
                   value={discordUsername}
                   onChange={(e) => setDiscordUsername(e.target.value)}
                   className="w-full px-3 py-2 rounded-md border border-input bg-background text-foreground"
@@ -78,10 +96,11 @@ export default function RequestAccessForm({ onClose }: RequestAccessFormProps) {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">
+                <label htmlFor={`${id}-minecraft`} className="text-sm font-medium text-foreground">
                   Minecraft Username
                 </label>
                 <input
+                  id={`${id}-minecraft`}
                   type="text"
                   value={minecraftUsername}
                   onChange={(e) => setMinecraftUsername(e.target.value)}

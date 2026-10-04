@@ -11,7 +11,7 @@ export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isRequestFormOpen, setIsRequestFormOpen] = useState(false)
   const serverName = process.env.NEXT_PUBLIC_SERVER_NAME || "MC Server"
-  const githubUrl = process.env.NEXT_PUBLIC_GITHUB_URL || "https://github.com/elijahcutler/mc-webapp"
+  const githubUrl = process.env.NEXT_PUBLIC_GITHUB_URL || "https://github.com/elijahcutler/mc-server-webapp"
 
   return (
     <header className="bg-card border-b border-border">
@@ -63,18 +63,21 @@ export default function Navbar() {
               <Users className="h-4 w-4" />
               <span>Request Access</span>
             </Button>
-            <Link href={`${githubUrl}`} target="_blank" rel="noopener noreferrer">
-              <Button variant="ghost" size="icon" className="h-8 w-8">
+            <Button asChild variant="ghost" size="icon" className="h-8 w-8">
+              <a href={githubUrl} target="_blank" rel="noopener noreferrer">
                 <SiGithub className="h-5 w-5" color="currentColor" />
                 <span className="sr-only">GitHub</span>
-              </Button>
-            </Link>
+              </a>
+            </Button>
           </div>
 
           {/* Mobile Menu Button */}
           <button
             className="md:hidden p-2 rounded-md hover:bg-accent transition-colors text-foreground"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
+            aria-expanded={isMenuOpen}
+            aria-controls="mobile-menu"
+            aria-label={isMenuOpen ? "Close menu" : "Open menu"}
           >
             {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
@@ -82,7 +85,7 @@ export default function Navbar() {
 
         {/* Mobile Menu */}
         {isMenuOpen && (
-          <div className="md:hidden py-4 border-t border-border">
+          <div id="mobile-menu" className="md:hidden py-4 border-t border-border">
             <nav className="flex flex-col space-y-4 mb-4">
               <Link
                 href="#server-status"
@@ -121,13 +124,16 @@ export default function Navbar() {
               <Button
                 variant="default"
                 className="w-full justify-start gap-2"
-                onClick={() => setIsRequestFormOpen(true)}
+                onClick={() => {
+                  setIsMenuOpen(false)
+                  setIsRequestFormOpen(true)
+                }}
               >
                 <Users className="h-4 w-4" />
                 <span>Request Access</span>
               </Button>
               <Link
-                href={`${githubUrl}`}
+                href={githubUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 px-4 py-2 hover:bg-accent rounded-md transition-colors text-foreground"
