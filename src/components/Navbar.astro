@@ -1,0 +1,138 @@
+---
+import { Map, Menu, ServerIcon, Users, X } from "lucide-preact"
+import GithubIcon from "./GithubIcon.astro"
+import { config } from "@/lib/config"
+import { buttonVariants, cn } from "@/lib/ui"
+
+const links = [
+  { href: "#server-status", label: "Status" },
+  { href: "#server-info", label: "Info" },
+  { href: "#mod-list", label: "Mods" },
+  { href: "#community", label: "Community" },
+]
+---
+
+<header class="bg-card border-b border-border">
+  <div class="container mx-auto px-4">
+    <div class="flex items-center justify-between h-16">
+      <a href="#" class="flex items-center gap-2">
+        <ServerIcon className="h-6 w-6 text-primary" aria-hidden="true" />
+        <span class="font-bold text-lg text-foreground">{config.serverName}</span>
+      </a>
+
+      <nav class="hidden md:flex items-center gap-6" aria-label="Sections">
+        {
+          links.map((link) => (
+            <a href={link.href} class="text-sm font-medium text-foreground hover:text-primary transition-colors">
+              {link.label}
+            </a>
+          ))
+        }
+      </nav>
+
+      <div class="hidden md:flex items-center gap-2">
+        {
+          config.mapUrl ? (
+            <a href={config.mapUrl} target="_blank" rel="noopener noreferrer" class={cn(buttonVariants({ variant: "outline", size: "sm" }), "gap-1")}>
+              <Map className="h-4 w-4" aria-hidden="true" />
+              <span>Map</span>
+            </a>
+          ) : (
+            <button type="button" disabled class={cn(buttonVariants({ variant: "outline", size: "sm" }), "gap-1")}>
+              <Map className="h-4 w-4" aria-hidden="true" />
+              <span>Map</span>
+            </button>
+          )
+        }
+        <button type="button" data-open-request-access class={cn(buttonVariants({ size: "sm" }), "gap-1")}>
+          <Users className="h-4 w-4" aria-hidden="true" />
+          <span>Request Access</span>
+        </button>
+        <a
+          href={config.githubUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          class={cn(buttonVariants({ variant: "ghost", size: "icon" }), "h-8 w-8")}
+        >
+          <GithubIcon class="h-5 w-5" />
+          <span class="sr-only">GitHub</span>
+        </a>
+      </div>
+
+      <button
+        type="button"
+        id="mobile-menu-toggle"
+        class="md:hidden p-2 rounded-md hover:bg-accent transition-colors text-foreground cursor-pointer"
+        aria-expanded="false"
+        aria-controls="mobile-menu"
+        aria-label="Open menu"
+      >
+        <Menu className="h-6 w-6 menu-open-icon" aria-hidden="true" />
+        <X className="h-6 w-6 menu-close-icon hidden" aria-hidden="true" />
+      </button>
+    </div>
+
+    <div id="mobile-menu" class="md:hidden py-4 border-t border-border" hidden>
+      <nav class="flex flex-col space-y-4 mb-4" aria-label="Sections">
+        {
+          links.map((link) => (
+            <a href={link.href} class="px-2 py-1 text-foreground hover:bg-accent rounded-md transition-colors">
+              {link.label}
+            </a>
+          ))
+        }
+      </nav>
+      <div class="flex flex-col space-y-2">
+        {
+          config.mapUrl ? (
+            <a href={config.mapUrl} target="_blank" rel="noopener noreferrer" class={cn(buttonVariants({ variant: "outline" }), "w-full justify-start gap-2")}>
+              <Map className="h-4 w-4" aria-hidden="true" />
+              <span>Map</span>
+            </a>
+          ) : (
+            <button type="button" disabled class={cn(buttonVariants({ variant: "outline" }), "w-full justify-start gap-2")}>
+              <Map className="h-4 w-4" aria-hidden="true" />
+              <span>Map</span>
+            </button>
+          )
+        }
+        <button type="button" data-open-request-access class={cn(buttonVariants(), "w-full justify-start gap-2")}>
+          <Users className="h-4 w-4" aria-hidden="true" />
+          <span>Request Access</span>
+        </button>
+        <a
+          href={config.githubUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="flex items-center gap-2 px-4 py-2 hover:bg-accent rounded-md transition-colors text-foreground"
+        >
+          <GithubIcon class="h-5 w-5" />
+          <span>GitHub</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<script>
+  const toggle = document.getElementById("mobile-menu-toggle")!
+  const menu = document.getElementById("mobile-menu")!
+
+  function setOpen(open: boolean) {
+    menu.hidden = !open
+    toggle.setAttribute("aria-expanded", String(open))
+    toggle.setAttribute("aria-label", open ? "Close menu" : "Open menu")
+    toggle.querySelector(".menu-open-icon")?.classList.toggle("hidden", open)
+    toggle.querySelector(".menu-close-icon")?.classList.toggle("hidden", !open)
+  }
+
+  toggle.addEventListener("click", () => setOpen(menu.hidden))
+  menu.addEventListener("click", (e) => {
+    if ((e.target as HTMLElement).closest("a, button")) setOpen(false)
+  })
+
+  // The request form island listens for this event.
+  for (const button of document.querySelectorAll("[data-open-request-access]")) {
+    button.addEventListener("click", () => document.dispatchEvent(new CustomEvent("open-request-access")))
+  }
+</script>

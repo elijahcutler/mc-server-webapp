@@ -10,13 +10,13 @@ Wants=network-online.target
 Type=simple
 WorkingDirectory=/srv/mc-server-webapp
 # DISCORD_WEBHOOK_URL=... lives here (chmod 600)
-EnvironmentFile=/srv/mc-server-webapp/.env.local
+EnvironmentFile=/srv/mc-server-webapp/.env
 Environment=PORT=8787
 Environment=HOST=127.0.0.1
 # Behind Caddy/nginx: trust its X-Forwarded-For for rate limiting.
 Environment=TRUST_PROXY=1
 # Uncomment to also serve the static site from this process (no Caddy):
-# Environment=STATIC_DIR=out
+# Environment=STATIC_DIR=dist
 ExecStart=/usr/bin/node --max-old-space-size=32 server/index.mjs
 Restart=on-failure
 DynamicUser=yes

@@ -1,0 +1,11 @@
+# Enable with: sudo systemctl enable --now mc-webapp-rebuild.timer
+[Unit]
+Description=Rebuild MC server webapp every 6 hours
+
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec=6h
+RandomizedDelaySec=10min
+
+[Install]
+WantedBy=timers.target

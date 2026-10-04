@@ -1,0 +1,12 @@
+---
+import { siGithub } from "simple-icons"
+
+interface Props {
+  class?: string
+}
+const { class: className } = Astro.props
+---
+
+<svg role="img" viewBox="0 0 24 24" fill="currentColor" class={className} aria-hidden="true">
+  <path d={siGithub.path} />
+</svg>

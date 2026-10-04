@@ -8,10 +8,10 @@ mc.example.com {
 	}
 
 	handle {
-		root * /srv/mc-server-webapp/out
+		root * /srv/mc-server-webapp/dist
 		try_files {path} {path}/index.html {path}.html
 		file_server
-		header /_next/static/* Cache-Control "public, max-age=31536000, immutable"
+		header /_astro/* Cache-Control "public, max-age=31536000, immutable"
 	}
 
 	handle_errors 404 {

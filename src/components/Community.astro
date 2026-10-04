@@ -1,0 +1,47 @@
+---
+import { Code, Heart, Server } from "lucide-preact"
+import GithubIcon from "./GithubIcon.astro"
+import { config } from "@/lib/config"
+import { buttonVariants, card, cn } from "@/lib/ui"
+
+const highlights = [
+  { icon: Server, title: "Self-Hosted", text: "Running on dedicated hardware in a home lab environment" },
+  { icon: Code, title: "Learning Project", text: "A continuous experiment in server management and web development" },
+  { icon: Heart, title: "Friend-Focused", text: "Curated by peers who enjoy gaming together" },
+]
+---
+
+<div class={card.root}>
+  <div class={cn(card.content, "space-y-6 pt-6")}>
+    <div class="space-y-4">
+      <p class="text-foreground">
+        This Minecraft server is self-hosted for a small community of friends who share a passion for gaming together.
+        What started as a simple idea has evolved into a learning project about server administration, modding, and web
+        development.
+      </p>
+      <p class="text-foreground">
+        This journey has involved learning about Linux server management, Java optimization, mod compatibility, and
+        creating custom tools to enhance our gameplay experience. This website itself is part of that learning journey!
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
+      {
+        highlights.map(({ icon: Icon, title, text }) => (
+          <div class="bg-accent/20 p-4 rounded-lg flex flex-col items-center text-center">
+            <Icon className="h-8 w-8 text-primary mb-2" aria-hidden="true" />
+            <h3 class="font-medium mb-1 text-card-foreground">{title}</h3>
+            <p class="text-sm text-muted-foreground">{text}</p>
+          </div>
+        ))
+      }
+    </div>
+
+    <div class="flex justify-center pt-2">
+      <a href={config.githubUrl} target="_blank" rel="noopener noreferrer" class={buttonVariants({ variant: "outline" })}>
+        <GithubIcon class="h-4 w-4" />
+        <span>View on GitHub</span>
+      </a>
+    </div>
+  </div>
+</div>
