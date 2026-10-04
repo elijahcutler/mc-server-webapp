@@ -1,24 +1,20 @@
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Server, Code, Heart } from "lucide-react"
 import { SiGithub } from "@icons-pack/react-simple-icons"
 import { Button } from "@/components/ui/button"
-import Link from "next/link"
 
 export default function CommunitySection() {
-  const githubUrl = process.env.NEXT_PUBLIC_GITHUB_URL || "https://github.com/elijahcutler/mc-webapp"
+  const githubUrl = process.env.NEXT_PUBLIC_GITHUB_URL || "https://github.com/elijahcutler/mc-server-webapp"
 
   return (
-    <Card className="bg-card shadow-xl border-primary/20 border" id="community">
-      <CardHeader>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="prose prose-sm max-w-none dark:prose-invert">
+    <Card className="bg-card shadow-xl border-primary/20 border">
+      <CardContent className="space-y-6 pt-6">
+        <div className="space-y-4">
           <p className="text-foreground">
             This Minecraft server is self-hosted for a small community of friends who share a passion for gaming 
             together. What started as a simple idea has evolved into a learning project about server administration,
             modding, and web development.
           </p>
-          <br />
           <p className="text-foreground">
             This journey has involved learning about Linux server management, Java optimization, mod compatibility, and
             creating custom tools to enhance our gameplay experience. This website itself is part of that learning
@@ -51,12 +47,12 @@ export default function CommunitySection() {
         </div>
 
         <div className="flex justify-center pt-2">
-          <Link href={githubUrl} target="_blank" rel="noopener noreferrer">
-            <Button variant="outline" className="gap-2">
+          <Button asChild variant="outline" className="gap-2">
+            <a href={githubUrl} target="_blank" rel="noopener noreferrer">
               <SiGithub className="h-4 w-4" color="currentColor" />
               <span>View on GitHub</span>
-            </Button>
-          </Link>
+            </a>
+          </Button>
         </div>
       </CardContent>
     </Card>

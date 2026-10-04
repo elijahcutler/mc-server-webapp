@@ -1,130 +1,26 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Copy, ExternalLink, Loader2 } from "lucide-react"
+import { Check, Copy, ExternalLink, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-
-// Define types for the API responses
-interface ModrinthVersion {
-  id: string
-  project_id: string
-  name: string
-  version_number: string
-  date_published: string
-  files: {
-    url: string
-    filename: string
-    primary: boolean
-  }[]
-}
-
-interface ModrinthProject {
-  id: string
-  title: string
-  slug: string
-  description: string
-}
-
-interface ModpackInfo {
-  name: string
-  version: string
-  downloadUrl: string
-  publishDate: string
-}
+import { gameVersion, useModpack } from "@/hooks/use-modpack"
 
 export default function ServerInfo() {
   const serverIp = process.env.NEXT_PUBLIC_SERVER_IP || "mc.ip.address"
-  const gameVersion = process.env.NEXT_PUBLIC_GAME_VERSION || "Game Version"
-  const modpackId = process.env.NEXT_PUBLIC_MODPACK_ID
-  const [modpackInfo, setModpackInfo] = useState<ModpackInfo | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    async function fetchModpackInfo() {
-      if (!modpackId) {
-        setLoading(false)
-        setError("No modpack ID provided")
-        return
-      }
-
-      try {
-        setLoading(true)
-        setError(null)
-
-        // Get the game version from the environment variable
-        const mcVersion = gameVersion || "1.20.1"
-
-        // Fetch modpack versions
-        const loaderType = "neoforge"
-        const versionsResponse = await fetch(
-          `https://api.modrinth.com/v2/project/${modpackId}/version?loaders=["${loaderType}"]&game_versions=["${mcVersion}"]`,
-        )
-
-        if (!versionsResponse.ok) {
-          throw new Error(`Failed to fetch modpack versions: ${versionsResponse.status}`)
-        }
-
-        const versionsData = (await versionsResponse.json()) as ModrinthVersion[]
-
-        if (versionsData.length === 0) {
-          throw new Error(`No versions found for modpack ${modpackId}`)
-        }
-
-        // Get the first (latest) version
-        const latestVersion = versionsData[0]
-
-        // Fetch the project details to get the name
-        const projectResponse = await fetch(`https://api.modrinth.com/v2/project/${modpackId}`)
-
-        if (!projectResponse.ok) {
-          throw new Error(`Failed to fetch project details: ${projectResponse.status}`)
-        }
-
-        const projectData = (await projectResponse.json()) as ModrinthProject
-
-        // Find the primary download file
-        const primaryFile = latestVersion.files.find((file) => file.primary) || latestVersion.files[0]
-
-        // Format the date
-        const publishDate = new Date(latestVersion.date_published).toLocaleDateString(undefined, {
-          year: "numeric",
-          month: "short",
-          day: "numeric",
-        })
-
-        setModpackInfo({
-          name: projectData.title,
-          version: latestVersion.version_number,
-          downloadUrl: primaryFile.url,
-          publishDate,
-        })
-      } catch (err) {
-        console.error("Error fetching modpack info:", err)
-        setError(err instanceof Error ? err.message : "Failed to fetch modpack info")
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchModpackInfo()
-  }, [gameVersion])
+  const modpack = useModpack()
+  const [copyState, setCopyState] = useState<"idle" | "copied" | "failed">("idle")
 
   const copyToClipboard = () => {
     navigator.clipboard
       .writeText(serverIp)
-      .then(() => {
-        // Could add a toast notification here
-        console.log("Server IP copied to clipboard")
-      })
-      .catch((err) => {
-        console.error("Failed to copy text: ", err)
-      })
+      .then(() => setCopyState("copied"))
+      .catch(() => setCopyState("failed"))
+      .finally(() => setTimeout(() => setCopyState("idle"), 2000))
   }
 
   return (
-    <Card className="h-full bg-card shadow-xl border-primary/20 border" id="server-info">
+    <Card className="h-full bg-card shadow-xl border-primary/20 border">
       <CardHeader>
         <CardTitle className="text-2xl text-card-foreground">Server Information</CardTitle>
         <CardDescription className="text-muted-foreground">
@@ -139,53 +35,54 @@ export default function ServerInfo() {
               {serverIp}
             </code>
             <Button size="icon" variant="outline" className="h-8 w-8" onClick={copyToClipboard}>
-              <Copy className="h-4 w-4" />
+              {copyState === "copied" ? <Check className="h-4 w-4 text-primary" /> : <Copy className="h-4 w-4" />}
               <span className="sr-only">Copy server address</span>
             </Button>
           </div>
+          <p className="text-xs text-muted-foreground h-4" aria-live="polite">
+            {copyState === "copied" ? "Copied!" : copyState === "failed" ? "Couldn't copy, select the address instead." : ""}
+          </p>
         </div>
 
         <div className="space-y-2">
           <div className="text-sm font-medium text-card-foreground">Game Version</div>
-          <div className="text-base text-foreground">{gameVersion}</div>
+          <div className="text-base text-foreground">{gameVersion ?? "Not specified"}</div>
         </div>
 
         <div className="space-y-2">
           <div className="text-sm font-medium text-card-foreground">Modpack</div>
-          {!modpackId ? (
+          {modpack.status === "missing" ? (
             <div className="text-muted-foreground">
               <p>Modpack ID not provided.</p>
             </div>
-          ) : loading ? (
+          ) : modpack.status === "loading" ? (
             <div className="flex items-center gap-2 text-muted-foreground">
               <Loader2 className="h-4 w-4 animate-spin" />
               <span>Loading modpack information...</span>
             </div>
-          ) : error ? (
+          ) : modpack.status === "error" ? (
             <div className="text-muted-foreground">
-              <p>Error loading modpack info: {error}</p>
+              <p>Error loading modpack info: {modpack.error}</p>
             </div>
           ) : (
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <a
-                  href={`https://modrinth.com/project/${modpackId}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-base text-foreground underline hover:text-accent-foreground"
-                >
-                  {modpackInfo?.name}
-                </a>
-                <a
-                  className="h-8 gap-1 inline-flex items-center justify-center rounded-md border border-input bg-background px-3 py-1 text-sm font-medium text-foreground shadow-sm hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                  href={modpackInfo?.downloadUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <ExternalLink className="h-3.5 w-3.5" />
-                  Modrinth Profile Download (.mrpack)
-                </a>
-              </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <a
+                href={`https://modrinth.com/modpack/${modpack.data.slug}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-base text-foreground underline hover:text-primary"
+              >
+                {modpack.data.name}
+              </a>
+              <span className="text-sm text-muted-foreground">v{modpack.data.version}</span>
+              {modpack.data.downloadUrl && (
+                <Button asChild variant="outline" size="sm" className="h-8 gap-1">
+                  <a href={modpack.data.downloadUrl} target="_blank" rel="noopener noreferrer">
+                    <ExternalLink className="h-3.5 w-3.5" />
+                    Modrinth Profile Download (.mrpack)
+                  </a>
+                </Button>
+              )}
             </div>
           )}
         </div>
@@ -193,8 +90,8 @@ export default function ServerInfo() {
         <div className="rounded-lg bg-accent/20 p-4">
           <h4 className="font-medium mb-2 text-card-foreground">Getting Started</h4>
           <ol className="list-decimal list-inside space-y-1 text-sm text-foreground">
-            <li>{modpackId ? "Download and install the modpack" : "Install the required mods (TBD)"}</li>
-            <li>Launch Minecraft with the {modpackId ? "modpack profile" : "correct profile"}</li>
+            <li>{modpack.status !== "missing" ? "Download and install the modpack" : "Install the required mods (TBD)"}</li>
+            <li>Launch Minecraft with the {modpack.status !== "missing" ? "modpack profile" : "correct profile"}</li>
             <li>Add the server to your multiplayer list</li>
             <li>Connect and start playing!</li>
           </ol>
@@ -203,4 +100,3 @@ export default function ServerInfo() {
     </Card>
   )
 }
-

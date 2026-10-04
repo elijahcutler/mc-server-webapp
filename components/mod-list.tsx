@@ -1,166 +1,52 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useMemo, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
-import { Search, Loader2 } from "lucide-react"
-
-// Define types for the API responses
-interface ModrinthVersion {
-  id: string
-  project_id: string
-  name: string
-  version_number: string
-  dependencies: {
-    version_id: string | null
-    project_id: string | null
-    file_name: string | null
-    dependency_type: string
-  }[]
-}
-
-interface ModrinthProject {
-  id: string
-  title: string
-  description: string
-  categories: string[]
-  icon_url: string
-  downloads: number
-  team: string
-  slug: string
-}
-
-interface ModData {
-  id: string
-  name: string
-  category: string
-  description: string
-  author: string
-  downloads: number
-  imageUrl: string
-  slug: string
-}
+import { Badge, badgeVariants } from "@/components/ui/badge"
+import { Package, Search, Loader2 } from "lucide-react"
+import { useModpack } from "@/hooks/use-modpack"
 
 export default function ModList() {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedCategory, setSelectedCategory] = useState("All")
-  const [mods, setMods] = useState<ModData[]>([])
-  const [categories, setCategories] = useState<string[]>(["All"])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const modpackId = process.env.NEXT_PUBLIC_MODPACK_ID
+  const modpack = useModpack()
+  const mods = modpack.status === "ready" ? modpack.data.mods : []
+  const loading = modpack.status === "loading"
 
-  useEffect(() => {
-    async function fetchModData() {
-      if (!modpackId) {
-        setLoading(false)
-        setError("No modpack ID provided")
-        return
-      }
+  const categories = useMemo(
+    () => ["All", ...Array.from(new Set(mods.flatMap((mod) => mod.categories))).sort()],
+    [mods],
+  )
 
-      try {
-        setLoading(true)
-        setError(null)
-
-        // Step 1: Get the game version from the server status (using environment variable for now)
-        const gameVersion = process.env.NEXT_PUBLIC_GAME_VERSION || ""
-
-        // Step 2: Fetch modpack versions
-        const loaderType = "neoforge"
-        const versionsResponse = await fetch(
-          `https://api.modrinth.com/v2/project/${modpackId}/version?loaders=["${loaderType}"]&game_versions=["${gameVersion}"]`,
-        )
-
-        if (!versionsResponse.ok) {
-          throw new Error(`Failed to fetch modpack versions: ${versionsResponse.status}`)
-        }
-
-        const versionsData = (await versionsResponse.json()) as ModrinthVersion[]
-
-        if (versionsData.length === 0) {
-          throw new Error(
-            `No versions found for modpack ${modpackId} with loader ${loaderType} and game version ${gameVersion}`,
-          )
-        }
-
-        // Step 3: Get the first version and extract project IDs from dependencies
-        const firstVersion = versionsData[0]
-        const projectIds = firstVersion.dependencies
-          .filter((dep) => dep.project_id)
-          .map((dep) => dep.project_id as string)
-
-        // Step 4: Fetch details for each project
-        const projectPromises = projectIds.map(async (projectId) => {
-          const projectResponse = await fetch(`https://api.modrinth.com/v2/project/${projectId}`)
-          if (!projectResponse.ok) {
-            console.warn(`Failed to fetch project ${projectId}: ${projectResponse.status}`)
-            return null
-          }
-          return (await projectResponse.json()) as ModrinthProject
-        })
-
-        const projectsData = (await Promise.all(projectPromises)).filter(Boolean) as ModrinthProject[]
-
-        // Step 5: Transform the data into our ModData format
-        const modData: ModData[] = projectsData.map((project) => ({
-          id: project.id,
-          name: project.title,
-          category: project.categories[0] || "Utility",
-          description: project.description,
-          author: project.team || "Unknown",
-          downloads: project.downloads,
-          imageUrl: project.icon_url,
-          slug: project.slug,
-        }))
-
-        // Step 6: Extract unique categories
-        const uniqueCategories = Array.from(new Set(projectsData.flatMap((project) => project.categories))).sort()
-
-        setMods(modData)
-        setCategories(["All", ...uniqueCategories])
-      } catch (err) {
-        console.error("Error fetching mod data:", err)
-        setError(err instanceof Error ? err.message : "Failed to fetch mod data")
-        setMods([])
-        setCategories(["All"])
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchModData()
-  }, [])
-
-  // Filter mods based on search term and category
+  const query = searchTerm.trim().toLowerCase()
   const filteredMods = mods.filter((mod) => {
     const matchesSearch =
-      mod.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      mod.description.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesCategory = selectedCategory === "All" || mod.category === selectedCategory
-
+      mod.name.toLowerCase().includes(query) || mod.description.toLowerCase().includes(query)
+    const matchesCategory = selectedCategory === "All" || mod.categories.includes(selectedCategory)
     return matchesSearch && matchesCategory
   })
 
   return (
-    <Card className="bg-card shadow-xl border-primary/20 border" id="mod-list">
+    <Card className="bg-card shadow-xl border-primary/20 border">
       <CardHeader>
         <CardTitle className="text-2xl text-card-foreground">Mod List</CardTitle>
         <CardDescription className="text-muted-foreground">
-          {!modpackId
-            ? ""
+          {modpack.status === "ready"
+            ? `Our server runs ${mods.length} carefully selected mods for the best experience`
             : loading
-            ? "Loading mods from Modrinth API..."
-            : `Our server runs ${mods.length} carefully selected mods for the best experience`}
+              ? "Loading mods from Modrinth..."
+              : ""}
         </CardDescription>
 
-        {modpackId && (
+        {modpack.status !== "missing" && (
           <div className="flex flex-col sm:flex-row gap-4 mt-4">
             <div className="relative flex-1">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
-                type="text"
+                type="search"
                 placeholder="Search mods..."
+                aria-label="Search mods"
                 className="pl-8 text-foreground"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -168,16 +54,18 @@ export default function ModList() {
               />
             </div>
 
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2" role="group" aria-label="Filter by category">
               {categories.map((category) => (
-                <Badge
+                <button
                   key={category}
-                  variant={selectedCategory === category ? "default" : "outline"}
-                  className={`cursor-pointer ${loading ? "opacity-50" : ""}`}
-                  onClick={() => !loading && setSelectedCategory(category)}
+                  type="button"
+                  aria-pressed={selectedCategory === category}
+                  className={`${badgeVariants({ variant: selectedCategory === category ? "default" : "outline" })} cursor-pointer capitalize disabled:opacity-50`}
+                  onClick={() => setSelectedCategory(category)}
+                  disabled={loading}
                 >
                   {category}
-                </Badge>
+                </button>
               ))}
             </div>
           </div>
@@ -185,18 +73,18 @@ export default function ModList() {
       </CardHeader>
 
       <CardContent>
-        {!modpackId ? (
+        {modpack.status === "missing" ? (
           <div className="text-center py-12">
             <p className="text-muted-foreground">Modpack ID not provided.</p>
           </div>
         ) : loading ? (
           <div className="flex flex-col items-center justify-center py-12 space-y-4">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <p className="text-muted-foreground">Loading mods from Modrinth API...</p>
+            <p className="text-muted-foreground">Loading mods from Modrinth...</p>
           </div>
-        ) : error ? (
+        ) : modpack.status === "error" ? (
           <div className="text-center py-12 space-y-4">
-            <p className="text-muted-foreground">Error loading mods: {error}</p>
+            <p className="text-muted-foreground">Error loading mods: {modpack.error}</p>
             <p className="text-muted-foreground">Please try again later.</p>
           </div>
         ) : (
@@ -205,21 +93,25 @@ export default function ModList() {
               {filteredMods.map((mod) => (
                 <a
                   key={mod.id}
-                  href={`https://modrinth.com/mod/${mod.slug}`}
+                  href={mod.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="card bg-accent/20 shadow-md hover:shadow-lg transition-all hover:scale-[1.02] hover:bg-accent/30"
+                  className="block rounded-lg bg-accent/20 shadow-md hover:shadow-lg transition-all hover:scale-[1.02] hover:bg-accent/30"
                 >
-                  <div className="card-body p-4">
+                  <div className="p-4">
                     <div className="flex items-start gap-3">
-                      <img
-                        src={mod.imageUrl}
-                        alt={mod.name}
-                        className="w-12 h-12 rounded-md object-cover bg-muted"
-                        onError={(e) => {
-                          ;(e.target as HTMLImageElement).src = ""
-                        }}
-                      />
+                      {mod.imageUrl ? (
+                        <img
+                          src={mod.imageUrl}
+                          alt=""
+                          loading="lazy"
+                          className="w-12 h-12 rounded-md object-cover bg-muted"
+                        />
+                      ) : (
+                        <div className="w-12 h-12 rounded-md bg-muted flex items-center justify-center">
+                          <Package className="h-6 w-6 text-muted-foreground" />
+                        </div>
+                      )}
                       <div>
                         <h3 className="font-bold text-base text-card-foreground">{mod.name}</h3>
                         <p className="text-xs text-muted-foreground">by {mod.author}</p>
@@ -228,9 +120,13 @@ export default function ModList() {
 
                     <p className="text-sm mt-2 line-clamp-2 text-foreground">{mod.description}</p>
 
-                    <div className="flex justify-end items-center mt-2">
-                      <Badge className="bg-primary text-primary-foreground text-xs">{mod.category}</Badge>
-                    </div>
+                    {mod.categories[0] && (
+                      <div className="flex justify-end items-center mt-2">
+                        <Badge className="bg-primary text-primary-foreground text-xs capitalize">
+                          {mod.categories[0]}
+                        </Badge>
+                      </div>
+                    )}
                   </div>
                 </a>
               ))}
@@ -247,4 +143,3 @@ export default function ModList() {
     </Card>
   )
 }
-
