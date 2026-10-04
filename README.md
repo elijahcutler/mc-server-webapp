@@ -32,6 +32,7 @@ NEXT_PUBLIC_SERVER_IP="your.server.ip"
 NEXT_PUBLIC_GAME_VERSION="1.20.1"
 NEXT_PUBLIC_MODPACK_ID="your-modrinth-modpack-id"
 NEXT_PUBLIC_GITHUB_URL="https://github.com/yourusername/your-repo"
+DISCORD_WEBHOOK_URL="https://discord.com/api/webhooks/..."  # server-only, never NEXT_PUBLIC_
 ```
 
 ### Installation

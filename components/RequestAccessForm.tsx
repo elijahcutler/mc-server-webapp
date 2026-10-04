@@ -9,35 +9,31 @@ interface RequestAccessFormProps {
 export default function RequestAccessForm({ onClose }: RequestAccessFormProps) {
   const [discordUsername, setDiscordUsername] = useState("")
   const [minecraftUsername, setMinecraftUsername] = useState("")
+  const [website, setWebsite] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [submitted, setSubmitted] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
+    setError(null)
 
     try {
-      const webhookUrl = process.env.NEXT_PUBLIC_DISCORD_WEBHOOK_URL
-      if (!webhookUrl) throw new Error("Discord webhook URL not configured")
-
-      const message = {
-        content: `**New Access Request**\nDiscord: ${discordUsername}\nMinecraft: ${minecraftUsername}`
-      }
-
-      const response = await fetch(webhookUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(message)
+      const response = await fetch("/api/request-access", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ discordUsername, minecraftUsername, website }),
       })
-
-      if (!response.ok) throw new Error('Failed to send webhook')
-      
-      onClose()
+      const result = (await response.json().catch(() => null)) as { ok?: boolean; error?: string } | null
+      if (!response.ok || !result?.ok) {
+        throw new Error(result?.error || "Could not send your request. Please try again later.")
+      }
+      setSubmitted(true)
       setDiscordUsername("")
       setMinecraftUsername("")
-    } catch (error) {
-      console.error('Error sending access request:', error)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not send your request. Please try again later.")
     } finally {
       setIsSubmitting(false)
     }
@@ -47,71 +43,93 @@ export default function RequestAccessForm({ onClose }: RequestAccessFormProps) {
     <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50">
       <div className="fixed left-[50%] top-[50%] translate-x-[-50%] translate-y-[-50%] w-full max-w-lg">
         <div className="bg-card border border-border p-6 rounded-lg shadow-lg">
-          <button 
+          <button
             className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100"
             onClick={onClose}
           >
             <X className="h-4 w-4" />
             <span className="sr-only">Close</span>
           </button>
-          
+
           <h3 className="text-lg font-semibold text-foreground">Request Server Access</h3>
-          
-          <form onSubmit={handleSubmit} className="mt-4 space-y-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">
-                Discord Username
-              </label>
+
+          {submitted ? (
+            <div className="mt-4 space-y-4">
+              <p className="text-sm text-foreground">Request sent! We&apos;ll reach out on Discord soon.</p>
+              <div className="flex justify-end">
+                <Button onClick={onClose}>Close</Button>
+              </div>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="mt-4 space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">
+                  Discord Username
+                </label>
+                <input
+                  type="text"
+                  value={discordUsername}
+                  onChange={(e) => setDiscordUsername(e.target.value)}
+                  className="w-full px-3 py-2 rounded-md border border-input bg-background text-foreground"
+                  placeholder="username"
+                  maxLength={37}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">
+                  Minecraft Username
+                </label>
+                <input
+                  type="text"
+                  value={minecraftUsername}
+                  onChange={(e) => setMinecraftUsername(e.target.value)}
+                  className="w-full px-3 py-2 rounded-md border border-input bg-background text-foreground"
+                  placeholder="Your Minecraft username"
+                  pattern="[A-Za-z0-9_]{3,16}"
+                  title="3-16 letters, numbers or underscores"
+                  required
+                />
+              </div>
+
+              {/* Honeypot: hidden from people, often filled in by bots. */}
               <input
                 type="text"
-                value={discordUsername}
-                onChange={(e) => setDiscordUsername(e.target.value)}
-                className="w-full px-3 py-2 rounded-md border border-input bg-background text-foreground"
-                placeholder="username#0000"
-                required
+                name="website"
+                value={website}
+                onChange={(e) => setWebsite(e.target.value)}
+                className="hidden"
+                tabIndex={-1}
+                autoComplete="off"
+                aria-hidden="true"
               />
-            </div>
-            
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">
-                Minecraft Username
-              </label>
-              <input
-                type="text"
-                value={minecraftUsername}
-                onChange={(e) => setMinecraftUsername(e.target.value)}
-                className="w-full px-3 py-2 rounded-md border border-input bg-background text-foreground"
-                placeholder="Your Minecraft username"
-                required
-              />
-            </div>
-            
-            <div className="flex justify-end gap-2 mt-6">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={onClose}
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                variant="default"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    Sending...
-                  </>
-                ) : (
-                  'Submit Request'
-                )}
-              </Button>
-            </div>
-          </form>
+
+              {error && (
+                <p className="text-sm text-destructive" role="alert">
+                  {error}
+                </p>
+              )}
+
+              <div className="flex justify-end gap-2 mt-6">
+                <Button type="button" variant="outline" onClick={onClose}>
+                  Cancel
+                </Button>
+                <Button type="submit" variant="default" disabled={isSubmitting}>
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      Sending...
+                    </>
+                  ) : (
+                    "Submit Request"
+                  )}
+                </Button>
+              </div>
+            </form>
+          )}
         </div>
       </div>
     </div>
   )
-} 
+}
