@@ -54,11 +54,10 @@ Copy `.env.example` to `.env.local` and fill it in:
    yarn install
    ```
 
-3. Run the development server:
+3. Run the development server (and, to test the request form, the API in a second terminal):
    ```bash
    npm run dev
-   # or
-   yarn dev
+   npm run dev:api
    ```
 
 4. Open [http://localhost:3000](http://localhost:3000) in your browser.
@@ -69,6 +68,15 @@ Copy `.env.example` to `.env.local` and fill it in:
 npm run typecheck
 npm test
 ```
+
+## Deployment
+
+`npm run build` produces a fully static site in `out/`. The only server-side piece is the
+access request API in `server/index.mjs`, a dependency-free Node script.
+
+- **Single process:** `npm run serve` serves `out/` and the API on port 8787 (about 65 MB of memory).
+- **Behind Caddy (recommended):** Caddy serves `out/` and proxies `/api/*` to the Node script.
+  See `deploy/Caddyfile` and the systemd unit in `deploy/mc-webapp.service`.
 
 ## Project Structure
 
