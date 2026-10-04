@@ -24,23 +24,27 @@ A modern, responsive web application for managing and showcasing your Minecraft 
 
 ### Environment Variables
 
-Create a `.env.local` file in the root directory with the following variables:
+Copy `.env.example` to `.env.local` and fill it in:
 
-```env
-NEXT_PUBLIC_SERVER_NAME="Your Server Name"
-NEXT_PUBLIC_SERVER_IP="your.server.ip"
-NEXT_PUBLIC_GAME_VERSION="1.20.1"
-NEXT_PUBLIC_MODPACK_ID="your-modrinth-modpack-id"
-NEXT_PUBLIC_GITHUB_URL="https://github.com/yourusername/your-repo"
-DISCORD_WEBHOOK_URL="https://discord.com/api/webhooks/..."  # server-only, never NEXT_PUBLIC_
-```
+| Variable | Required | Description |
+|---|---|---|
+| `NEXT_PUBLIC_SERVER_NAME` | no | Name shown in the navbar and page title |
+| `NEXT_PUBLIC_SERVER_DESCRIPTION` | no | Page description and status fallback text |
+| `NEXT_PUBLIC_SERVER_IP` | yes | Address players connect to; also used for the status check |
+| `NEXT_PUBLIC_GAME_VERSION` | no | Minecraft version used to pick the modpack release |
+| `NEXT_PUBLIC_MODLOADER` | no | `neoforge` (default), `forge`, `fabric` or `quilt` |
+| `NEXT_PUBLIC_MODPACK_ID` | no | Modrinth project ID or slug of the modpack |
+| `NEXT_PUBLIC_GITHUB_URL` | no | Link for the GitHub buttons |
+| `DISCORD_WEBHOOK_URL` | for access requests | **Server-only.** Discord webhook that receives access requests. Never prefix it with `NEXT_PUBLIC_`. |
+
+`NEXT_PUBLIC_*` values are embedded at build time, so rebuild after changing them.
 
 ### Installation
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/mc-webapp.git
-   cd mc-webapp
+   git clone https://github.com/elijahcutler/mc-server-webapp.git
+   cd mc-server-webapp
    ```
 
 2. Install dependencies:
@@ -59,24 +63,30 @@ DISCORD_WEBHOOK_URL="https://discord.com/api/webhooks/..."  # server-only, never
 
 4. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
+### Checks
+
+```bash
+npm run typecheck
+npm test
+```
+
 ## Project Structure
 
 ```
-mc-webapp/
-├── app/                # Next.js app directory
-├── components/         # React components
-│   ├── ui/            # shadcn/ui components
-│   └── ...            # Custom components
-├── public/            # Static assets
-├── styles/            # Global styles
-└── lib/              # Utility functions
+mc-server-webapp/
+├── app/               # Next.js app directory (page + /api/request-access)
+├── components/        # React components
+│   └── ui/            # shadcn/ui components
+├── hooks/             # Shared React hooks
+├── lib/               # Modrinth client and utilities
+└── server/            # Framework-agnostic access request handler
 ```
 
 ## Features in Detail
 
 ### Server Status
 - Real-time server status monitoring
-- Current player count and list
+- Current player count
 - Server version information
 
 ### Server Information
@@ -88,7 +98,7 @@ mc-webapp/
 - Integration with Modrinth API
 - Search and filter functionality
 - Mod categories and descriptions
-- Direct download links
+- Links to each project on Modrinth
 
 ### Community Section
 - Server description and rules
