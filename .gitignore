@@ -32,4 +32,6 @@ next-env.d.ts
 
 # astro
 /dist/
+/dist.next/
+/dist.prev/
 .astro/

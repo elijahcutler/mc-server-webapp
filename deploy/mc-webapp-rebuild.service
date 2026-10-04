@@ -1,0 +1,14 @@
+# Rebuilds the static site so the mod list and modpack info stay current.
+# Runs as the user that owns the checkout; adjust User= and paths.
+[Unit]
+Description=Rebuild MC server webapp
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=minecraft
+WorkingDirectory=/srv/mc-server-webapp
+# Build into a temporary directory, then swap it in so visitors never see a half-written site.
+ExecStart=/usr/bin/npx astro build --outDir dist.next
+ExecStartPost=/bin/sh -c 'rm -rf dist.prev && (mv dist dist.prev 2>/dev/null || true) && mv dist.next dist && rm -rf dist.prev'
