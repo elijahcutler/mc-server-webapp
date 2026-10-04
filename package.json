@@ -6,7 +6,7 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "test": "node --test server/*.test.mjs",
+    "test": "node --test server/*.test.mjs && node --experimental-strip-types --no-warnings --test lib/*.test.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
